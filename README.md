@@ -1,2 +1,2 @@
 # Chat-App
-Making this project for College Mini Project .
+Making this project for College Mini Project.
