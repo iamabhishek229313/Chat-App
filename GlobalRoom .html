@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>GLobal Chat Room.</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.7.1/p5.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.7.1/addons/p5.dom.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.7.1/addons/p5.sound.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.9.0/css/all.min.css"
+        integrity="sha256-UzFD2WYH2U1dQpKDjjZK72VtPeWP50NoJjd26rnAdUI=" crossorigin="anonymous" />
+    <link href="https://fonts.googleapis.com/css?family=Rubik&display=swap" rel="stylesheet">
+    <script src="https://www.gstatic.com/firebasejs/6.3.3/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/6.3.3/firebase-database.js"></script>
+</head>
+<style>
+    body {
+        background: linear-gradient(90deg, #1CB5E0 0%, #000851 100%);
+    }
+
+    #grid_container {
+        display: grid;
+        position: absolute;
+        grid-template-areas:
+            'nav nav nav nav'
+            'side main main main'
+            'side main main main'
+            'side footer footer footer';
+        grid-template-columns: 23% auto auto auto;
+        grid-template-rows: 7% auto auto 5%;
+        background: linear-gradient(rgba(255, 255, 255, 0.6), rgba(255, 255, 255, 0.6));
+        top: -40%;
+        left: 50%;
+        height: 90%;
+        width: 70%;
+        transform: translate(-50%, 50%);
+        border-radius: 4px;
+    }
+
+    #navigation_top {
+        grid-area: nav;
+        background: linear-gradient(90deg, #4b6cb7 0%, #182848 100%);
+    }
+
+    #sidebar {
+        grid-area: side;
+        background: linear-gradient(90deg, #d53369 0%, #daae51 100%);
+        overflow: auto;
+    }
+
+    #main_catalog {
+        display: block;
+        grid-area: main;
+        background: linear-gradient(rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.5));
+        overflow-x: hidden;
+        overflow-y: scroll;
+    }
+
+    #user_wrap {
+        display: block;
+    }
+
+    #user {
+        position: relative;
+        background: linear-gradient(90deg, #9ebd13 0%, #008552 100%);
+        border-radius: 10px 10px 0px 10px;
+        justify-content: center;
+        margin: 10px 10px 10px 10px;
+        width: 65%;
+        left: 32%;
+        height: max-content;
+        padding: 4px;
+        color: black;
+        font-weight: 700;
+    }
+
+    #person {
+        position: relative;
+        background: linear-gradient(90deg, blue 0%, #008552 100%);
+        border-radius: 10px 10px 10px 0px;
+        justify-content: center;
+        margin: 10px 10px 10px 10px;
+        width: 65%;
+        height: max-content;
+        padding: 4px;
+        color: black;
+        font-weight: 700;
+    }
+
+    #details_of_user {
+        position: relative;
+        float: right;
+        color: white;
+        font-weight: 300;
+        font-family: 'Rubik';
+    }
+
+    #footer {
+        grid-area: footer;
+        background: linear-gradient(90deg, #4b6cb7 0%, #182848 100%);
+    }
+</style>
+
+<body>
+    <div id="grid_container">
+        <div id="navigation_top">
+            <h1 style="font-family:Rubik;text-align:center;color:mintcream;margin:1%;"><i class="fas fa-users"
+                    style="color:black;font-size:40px;"></i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GLOBAL CHAT ROOM
+            </h1>
+        </div>
+
+        <div id="sidebar">
+            <div id="sidebar_top"
+                style="background: linear-gradient(90deg, #0700b8 0%, #00ff88 100%);text-align:center;font-size:18px;padding:10px;">
+                Joined People</div>
+        </div>
+
+
+        <div id="main_catalog">
+
+        </div>
+
+
+        <div id="footer">
+            <input id="message" placeholder="Your Message" type="text" style="width:81%;height:80%;font-size:18px;">
+            <button id="send" style="width:15%;height:80%;margin-left:1%;color:white;font-size:18px;"><i
+                    class="far fa-paper-plane"></i>&nbsp;&nbsp;&nbsp;&nbsp;SEND</button>
+        </div>
+    </div>
+    <script>
+        var currentUser = prompt("Enter your Name :");
+        var record;
+        var firebaseConfig = {
+            apiKey: "AIzaSyDHJpbEx2XTygF5o1bO_T-vQzs5C3WAjT0",
+            authDomain: "chat-app-7a586.firebaseapp.com",
+            databaseURL: "https://chat-app-7a586.firebaseio.com",
+            projectId: "chat-app-7a586",
+            storageBucket: "chat-app-7a586.appspot.com",
+            messagingSenderId: "465700310113",
+            appId: "1:465700310113:web:1ae71c80f920ff25"
+        };
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        var database;
+        var reference;
+
+        // When user clicks ont he buttn append a child as user and then throw the data to the 
+        // firebase system .
+        document.getElementById("send").addEventListener('click', function () {
+
+            console.log(firebase);
+            // till connected to database .
+            // we have to sent this with the timestamp .
+
+            database = firebase.database();
+            reference = database.ref("Messages");
+
+            var lastTimeStampOfUser = Date.now();
+            var date = new Date(lastTimeStampOfUser);
+            console.log(date);
+            var x = document.getElementById("message").value;
+            // debug required in next lines .currentUser + "    |    " + 
+            // var detailChild = document.createElement("div");
+            // detailChild.innerHTML = date;
+            // detailChild.id = "details_of_user";
+            // preParent.appendChild(detailChild);
+            // till working fine !
+
+            var msg_timestamp = {
+                user: currentUser,
+                message: x,
+                timestamp: lastTimeStampOfUser
+            };
+            reference.push(msg_timestamp);
+            reference.on('value', knowData, error);
+
+            function knowData(data) {
+                var daat = data.val();
+                var keyss = Object.keys(daat);
+                var lng = keyss.length;
+                record = lng;
+            }
+
+            function error(err) {
+                if (err) console.log("Error Data !");
+            }
+
+        });
+
+        // Now we go for checking the preccesed request given to the server by other users termed as persons .
+
+        setTimeout(queryAboutData, 1000);
+
+
+        function queryAboutData() {
+            database = firebase.database();
+            reference = database.ref("Messages");
+            reference.on('value', gotData, errData);
+        }
+
+        function gotData(data) {
+            var valuated_data = data.val();
+            //console.log(valuated_data); 
+            var keys = Object.keys(valuated_data);
+            //console.log(keys); // till working fine !
+            var length = keys.length;
+            console.log(length);
+            console.log(valuated_data[keys[length - 1]].message); //working fine !!!
+            //console.log(currentUser);
+            //console.log(valuated_data[keys[length - 1]].user != currentUser) ;
+
+            if (record != length) {
+                if (valuated_data[keys[length - 1]].user != currentUser) {
+                    var parentDiv = document.getElementById("main_catalog");
+                    var preParent2 = document.createElement("div");
+                    preParent2.id = "person_wraper";
+                    preParent2.style.position = 'relative';
+                    preParent2.style.width = '100%';
+                    preParent2.style.height = 'max-content';
+                    parentDiv.appendChild(preParent2);
+                    var child_Div2 = document.createElement("div");
+                    child_Div2.innerHTML = valuated_data[keys[length - 1]].message;
+                    child_Div2.id = "person";
+                    preParent2.appendChild(child_Div2);
+                } else {
+                    console.log("same user!");
+
+                    var msg = document.getElementById("message").value;
+                    var parentDiv = document.getElementById("main_catalog");
+                    var preParent = document.createElement("div");
+                    preParent.id = "user_wraper";
+                    preParent.style.position = 'relative';
+                    preParent.style.width = '100%';
+                    preParent.style.height = 'max-content';
+                    parentDiv.appendChild(preParent);
+                    var child_Div = document.createElement("div");
+                    child_Div.innerHTML = msg;
+                    child_Div.id = "user";
+                    preParent.appendChild(child_Div);
+                }
+            }
+        }
+
+        function errData(err) {
+            if (err) console.log("Error Data !");
+        }
+    </script>
+</body>
+
+</html>
+<!--
+    // New algorithm
+
+    setTimeout(queryAboutData, 1000);
+
+
+        function queryAboutData() {
+            database = firebase.database();
+            reference = database.ref("Messages");
+            reference.on('value', gotData, errData);
+        }
+
+        function gotData(data) {
+            var valuated_data = data.val();
+            var record ;
+            //console.log(valuated_data); 
+            var keys = Object.keys(valuated_data);
+            //console.log(keys); // till working fine !
+            var length = keys.length;
+            console.log(length);
+            console.log(valuated_data[keys[length - 1]].message); //working fine !!!
+            //console.log(currentUser);
+            valuated_data[keys[length - 1]].user != currentUser
+            if (record != length) {
+                    if(valuated_data[keys[length - 1]].user != currentUser)
+                // var parentDiv2 = document.getElementById("person_wrapper");
+                // var child_Div2 = document.createElement("div");
+                // child_Div2.innerHTML = valuated_data[keys[length - 1]].message;
+                // child_Div2.id = "person";
+                // parentDiv2.appendChild(child_Div2);
+                // console.log(valuated_data[keys[length - 1]].message);
+
+
+
+                //////
+
+                var parentDiv = document.getElementById("main_catalog");
+                var preParent2 = document.createElement("div");
+                preParent2.id = "person_wraper";
+                preParent2.style.position = 'relative';
+                preParent2.style.width = '100%';
+                preParent2.style.height = 'max-content';
+                parentDiv.appendChild(preParent2);
+                var child_Div2 = document.createElement("div");
+                child_Div2.innerHTML = valuated_data[keys[length - 1]].message;
+                child_Div2.id = "person";
+                preParent2.appendChild(child_Div2);
+            } else {
+                console.log("same user!");
+                database = firebase.database();
+            reference = database.ref("Messages");
+            var lastTimeStampOfUser = Date.now();
+            var date = new Date(lastTimeStampOfUser) ;
+            console.log(date);
+            var msg = document.getElementById("message").value;
+            var parentDiv = document.getElementById("main_catalog");
+            var preParent = document.createElement("div");
+            preParent.id = "user_wraper";
+            preParent.style.position = 'relative';
+            preParent.style.width = '100%';
+            preParent.style.height = 'max-content';
+            parentDiv.appendChild(preParent);
+            var child_Div = document.createElement("div");
+            child_Div.innerHTML = msg;
+            child_Div.id = "user";
+            preParent.appendChild(child_Div);
+            }
+        }
+
+        function errData(err) {
+            if (err) console.log("Error Data !");
+        }
+
+
+
+
+
+
+
+-->
